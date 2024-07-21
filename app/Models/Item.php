@@ -26,7 +26,7 @@ class Item extends Model
         'added_date' => 'datetime', // Cast to Carbon instance
     ];
 
-    public function category()
+    public function categoryname()
     {
         return $this->belongsTo(Category::class, 'category');
     }

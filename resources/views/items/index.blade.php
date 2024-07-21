@@ -25,7 +25,7 @@
                 <td>{{ $item->sku }}</td>
                 <td>{{ $item->price }}</td>
                 <td>{{ $item->count }}</td>
-                <td>{{ $item->category->name }}</td>
+                <td>{{ $item->categoryname ? $item->categoryname->name : 'No Category' }}</td>
                 <td>{{ $item->added_date->format('F j, Y') }}</td>
                 <td>
                     <a href="{{ route('items.edit', $item) }}" class="btn btn-warning btn-sm">Edit</a>

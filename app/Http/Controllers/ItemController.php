@@ -23,7 +23,9 @@ class ItemController extends Controller
 
     public function index()
     {
-        $items = Item::with('category')->get();
+
+        $items = Item::with('categoryname')->get();
+
         return view('items.index', compact('items'));
     }
 
@@ -50,7 +52,7 @@ class ItemController extends Controller
             'count' => 'required|integer',
         ]);
 
-        $item = Item::create($request->all());
+        Item::create($request->all());
 
         $coreSystemData = $request->only([
             'category', 'name', 'sku', 'description', 'price', 'count', 'remarks'
@@ -58,7 +60,7 @@ class ItemController extends Controller
 
         // Call the API
         $response = $this->coreSystemService->addItem($coreSystemData);
-        dd($response);
+        // dd($response);
         if ($response['status'] != 200) {
             return redirect()->route('items.index')->with('error', 'Failed to add item to core system.');
         }
@@ -95,26 +97,24 @@ class ItemController extends Controller
             'description' => 'required',
             'price' => 'required|numeric',
             'count' => 'required|integer',
+            'sku' => 'required|unique:items',
             'added_date' => 'required|date',
         ]);
 
         $item->update($request->all());
 
-        // Prepare data for the core system
         $coreSystemData = $request->only([
             'category', 'name', 'description', 'price', 'count', 'remarks'
         ]);
 
-        // Call the API to update the item in the core system
         $response = $this->coreSystemService->updateItem($coreSystemData);
-        dd($response);
+        //  dd($response);
 
         if ($response['status'] != 200) {
             return redirect()->route('items.index')->with('error', 'Failed to update item in core system.');
         }
 
         return redirect()->route('items.index')->with('success', 'Item updated successfully.');
-
     }
 
     /**
@@ -124,9 +124,13 @@ class ItemController extends Controller
     {
         $response = $this->coreSystemService->removeItem(['sku' => $item->sku]);
 
-//dd($response);
+        //dd($response);
 
         if ($response['status'] != 200) {
+            return redirect()->route('items.index')->with('error', 'Failed to remove item from core system.');
+        }
+
+        if ($response['status'] == 200) {
             return redirect()->route('items.index')->with('error', 'Failed to remove item from core system.');
         }
 
