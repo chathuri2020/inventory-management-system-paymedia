@@ -6,12 +6,21 @@ use App\Models\Item;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use App\Services\CoreSystemService;
 
 class ItemController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    protected $coreSystemService;
+
+    public function __construct(CoreSystemService $coreSystemService)
+    {
+        $this->coreSystemService = $coreSystemService;
+    }
+
+
     public function index()
     {
         $items = Item::with('category')->get();
@@ -33,7 +42,7 @@ class ItemController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'category_id' => 'required',
+            'category' => 'required',
             'name' => 'required',
             'sku' => 'required|unique:items',
             'description' => 'required',
@@ -43,8 +52,16 @@ class ItemController extends Controller
 
         $item = Item::create($request->all());
 
-        // Call the API to add the item to the core system
-        $this->callApi('add', $item->toArray());
+        $coreSystemData = $request->only([
+            'category', 'name', 'sku', 'description', 'price', 'count', 'remarks'
+        ]);
+
+        // Call the API
+        $response = $this->coreSystemService->addItem($coreSystemData);
+        dd($response);
+        if ($response['status'] != 200) {
+            return redirect()->route('items.index')->with('error', 'Failed to add item to core system.');
+        }
 
         return redirect()->route('items.index')->with('success', 'Item created successfully.');
     }
@@ -71,8 +88,9 @@ class ItemController extends Controller
      */
     public function update(Request $request, Item $item)
     {
+
         $request->validate([
-            'category_id' => 'required',
+            'category' => 'required',
             'name' => 'required',
             'description' => 'required',
             'price' => 'required|numeric',
@@ -82,10 +100,21 @@ class ItemController extends Controller
 
         $item->update($request->all());
 
+        // Prepare data for the core system
+        $coreSystemData = $request->only([
+            'category', 'name', 'description', 'price', 'count', 'remarks'
+        ]);
+
         // Call the API to update the item in the core system
-        $this->callApi('update', $item->toArray());
+        $response = $this->coreSystemService->updateItem($coreSystemData);
+        dd($response);
+
+        if ($response['status'] != 200) {
+            return redirect()->route('items.index')->with('error', 'Failed to update item in core system.');
+        }
 
         return redirect()->route('items.index')->with('success', 'Item updated successfully.');
+
     }
 
     /**
@@ -93,16 +122,16 @@ class ItemController extends Controller
      */
     public function destroy(Item $item)
     {
-        $this->callApi('remove', ['sku' => $item->sku]);
+        $response = $this->coreSystemService->removeItem(['sku' => $item->sku]);
+
+//dd($response);
+
+        if ($response['status'] != 200) {
+            return redirect()->route('items.index')->with('error', 'Failed to remove item from core system.');
+        }
+
         $item->delete();
 
         return redirect()->route('items.index')->with('success', 'Item deleted successfully.');
-    }
-
-    private function callApi($action, $data)
-    {
-        $url = 'https://dpf.directpay.lk/api/inventory/' . $action;
-        $response = Http::post($url, $data);
-        return $response->json();
     }
 }

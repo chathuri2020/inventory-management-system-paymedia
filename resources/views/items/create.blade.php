@@ -9,16 +9,16 @@
             <!-- Left Column -->
             <div class="col-md-6">
                 <div class="form-group mt-3">
-                    <label for="category_id">Category</label>
-                    <select id="category_id" name="category_id" class="form-control @error('category_id') is-invalid @enderror" >
+                    <label for="category">Category</label>
+                    <select id="category" name="category" class="form-control @error('category') is-invalid @enderror" >
                         <option value="">Select a category</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                            <option value="{{ $category->id }}" {{ old('category') == $category->id ? 'selected' : '' }}>
                                 {{ $category->name }}
                             </option>
                         @endforeach
                     </select>
-                    @error('category_id')
+                    @error('category')
                         <span class="invalid-feedback" role="alert">
                             <strong>{{ $message }}</strong>
                         </span>

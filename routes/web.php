@@ -13,7 +13,10 @@ Route::get('/', function () {
 
 
 
-Route::resource('items', ItemController::class)->middleware('auth');
+Route::group(['middleware' => ['web']], function () {
+    Route::resource('items', ItemController::class);
+});
+
 Route::resource('categories', CategoryController::class)->middleware('auth');
 
 Auth::routes();

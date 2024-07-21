@@ -12,7 +12,7 @@ class Item extends Model
     protected $table = 'items'; // Specify the custom table name
 
     protected $fillable = [
-        'category_id',
+        'category',
         'name',
         'sku',
         'description',
@@ -28,6 +28,6 @@ class Item extends Model
 
     public function category()
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(Category::class, 'category');
     }
 }
